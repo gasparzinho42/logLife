@@ -9,11 +9,13 @@ import { PasswordResetContext, resetPasswordContextType } from "../../context";
 import { AuthAPI } from "../../api";
 import { Errors } from "../../types";
 import Toaster from "../../components/toaster";
+import Loading from "../../components/loading";
 
 const Login: React.FC = () => {
   const [login, setLogin] = useState("");
   const [passWord, setPassword] = useState("");
   const [showToaster, setShowToaster] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
   const [errors, setErrors] = useState<Errors[]>([]);
   const { resetedPassword, setResetPassword } = useContext(
     PasswordResetContext
@@ -79,14 +81,21 @@ const Login: React.FC = () => {
     }
   };
   const handleLogin = async () => {
-    const body = {
-      username: login,
-      password: passWord,
-    };
-    const isInvalid = validateLogin();
-    if (!isInvalid) {
-      const response = await AuthAPI(body);
-      validateResponse(response.status, response.message);
+    setShowLoading(true);
+    try {
+      const body = {
+        username: login,
+        password: passWord,
+      };
+      const isInvalid = validateLogin();
+      if (!isInvalid) {
+        const response = await AuthAPI(body);
+        validateResponse(response.status, response.message);
+      }
+    } catch (error) {
+      console.log("erro", error);
+    } finally {
+      setShowLoading(false);
     }
   };
   return (
@@ -126,6 +135,7 @@ const Login: React.FC = () => {
         show={showToaster}
         secondsInMs={3000}
       />
+      <Loading showLoading={showLoading} />
     </Container>
   );
 };
